@@ -15,10 +15,8 @@ import tango
 from tango import DevState
 from tango.server import Device, attribute, command
 from tango.server import device_property
-from tango import READ, READ_WRITE
+from tango import READ
 import sys
-import time
-import numpy as np
 
 
 class Lakeshore460(Device):
