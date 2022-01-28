@@ -3,7 +3,7 @@
 """
 Created on Fr, Jan 28 2022
 
-Device server to configure and read a Lakehosre Model 460 gaussmeter.
+Device server to configure and read a Lakeshore Model 460 gaussmeter.
 Reads all three probe inputs and returns individual readings as well as magnitude.
 
 @author: Michael Schneider <mschneid@mbi-berlin.de>, Max Born Institut Berlin
