@@ -45,28 +45,23 @@ class Lakeshore460(Device):
         format='%10.4f',
         )
 
-    m = attribute(
-        name='m',
-        access=READ,
-        unit='mT',
-        dtype=tango.DevFloat,
-        format='%10.4f',
-        )
-
     gpib_addr = device_property(
         dtype=str,
         mandatory=True,
         update_db=True,
         )
 
+    UNIT_MULT = {'u': 1e-6, 'm': 1e-3, '': 1, 'k': 1e3}
+
     def init_device(self):
         Device.init_device(self)
         self.rm = visa.ResourceManager('@py')
         self.inst = self.rm.open_resource(f'GPIB::{self.gpib_addr}::INSTR')
         self.inst.clear()
+        self.inst.read_termination = '\r\n'
         try:
             ans = self.inst.query('*IDN?')
-            print(ans)
+            print(ans, file=self.log_info)
             if 'MODEL460' in ans:
                 self.configure_device()
                 self.set_state(DevState.ON)
@@ -81,34 +76,35 @@ class Lakeshore460(Device):
         self._fieldvalues = [0, 0, 0, 0]
 
     def always_executed_hook(self):
-        ans = self.inst.query('ALLF?')
-        print(f'always_executed_hook -> {ans}', file=self.log_debug)
-        try:
-            self._fieldvalues = [float(s) for s in ans.split(',')]
-        except Exception as e:
-            # likely a timeout ocurred - flush buffer
-            print(f'unexpected {e}: {msg} -> {ans}. Clearing buffer.',
-                  file=self.log_warn)
-            self.inst.clear()
-        return
+        pass
+
+    def measure(self, ax: str) -> float:
+        """Set active channel (X/Y/Z) and request single measurement"""
+        print(f"In measure({ax})", file=self.log_debug)
+        self.inst.write(f"CHNL {ax}")
+        mag = self.UNIT_MULT[self.inst.query("FIELDM?")]
+        val = float(self.inst.query("FIELD?"))
+        print(f"measure {ax}: {mag} * {val}", file=self.log_debug)
+        return mag * val
 
     def read_mx(self):
-        return self._fieldvalues[0]
+        return 1e3 * self.measure('X')
 
     def read_my(self):
-        return self._fieldvalues[1]
+        return 1e3 * self.measure('Y')
 
     def read_mz(self):
-        return self._fieldvalues[2]
-
-    def read_m(self):
-        return self._fieldvalues[3]
+        return 1e3 * self.measure('Z')
 
     def configure_device(self):
-        pass
+        """Set all channels to Tesla"""
+        for ax in "XYZ":
+            self.inst.write(f"CHNL {ax}")
+            self.inst.write("UNIT T")
 
     @command
     def reset_device(self):
+        self.inst.clear()
         self.inst.write('*RST')
         self.configure_device()
 
