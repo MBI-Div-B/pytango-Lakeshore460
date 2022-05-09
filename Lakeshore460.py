@@ -15,8 +15,17 @@ import tango
 from tango import DevState
 from tango.server import Device, attribute, command
 from tango.server import device_property
-from tango import READ
+from tango import READ, READ_WRITE
 import sys
+from enum import IntEnum
+
+
+class MeasRange(IntEnum):
+    HIGHEST=0
+    HIGH=1
+    LOW=2
+    LOWEST=3
+    AUTO=4
 
 
 class Lakeshore460(Device):
@@ -45,13 +54,19 @@ class Lakeshore460(Device):
         format='%10.4f',
         )
 
+    measrange = attribute(
+        label="range",
+        access=READ_WRITE,
+        dtype=MeasRange,
+        )
+
     gpib_addr = device_property(
         dtype=str,
         mandatory=True,
         update_db=True,
         )
 
-    UNIT_MULT = {'u': 1e-6, 'm': 1e-3, '': 1, 'k': 1e3}
+    UNIT_MULT = {'u': 1e-6, 'm': 1e-3, ' ': 1, 'k': 1e3}
 
     def init_device(self):
         Device.init_device(self)
@@ -101,6 +116,23 @@ class Lakeshore460(Device):
         for ax in "XYZ":
             self.inst.write(f"CHNL {ax}")
             self.inst.write("UNIT T")
+
+    def read_measrange(self):
+        is_auto = int(self.inst.query("AUTO?"))
+        if is_auto:
+            return MeasRange.AUTO
+        else:
+            mrange = int(self.inst.query("RANGE?"))
+            return mrange
+
+    def write_measrange(self, value):
+        if value == MeasRange.AUTO:
+            cmd = "AUTO 1"
+        else:
+            cmd = f"RANGE {value}"
+        for ax in "XYZ":
+            self.inst.write(f"CHNL {ax}")
+            self.inst.write(cmd)
 
     @command
     def reset_device(self):
