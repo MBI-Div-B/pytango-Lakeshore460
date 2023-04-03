@@ -54,6 +54,24 @@ class Lakeshore460(Device):
         format='%10.4f',
         )
 
+    xenable = attribute(
+        name="xenable",
+        access=READ_WRITE,
+        dtype=tango.DevBoolean,
+        )
+
+    yenable = attribute(
+        name="yenable",
+        access=READ_WRITE,
+        dtype=tango.DevBoolean,
+        )
+
+    zenable = attribute(
+        name="zenable",
+        access=READ_WRITE,
+        dtype=tango.DevBoolean,
+        )
+
     measrange = attribute(
         label="range",
         access=READ_WRITE,
@@ -133,6 +151,34 @@ class Lakeshore460(Device):
         for ax in "XYZ":
             self.inst.write(f"CHNL {ax}")
             self.inst.write(cmd)
+
+    def _read_enable(self, channel):
+        self.inst.write(f"CHNL {channel}")
+        ans = self.inst.query("ONOFF?")
+        print(f"{channel} enable: {ans}", file=self.log_debug)
+        return bool(1 - int(ans))  # weird, manual says it's the other way
+
+    def _write_enable(self, channel, value):
+        self.inst.write(f"CHNL {channel}")
+        self.inst.write(f"ONOFF {value:d}")
+
+    def read_xenable(self):
+        return self._read_enable("X")
+
+    def write_xenable(self, value):
+        self._write_enable("X", value)
+        
+    def read_yenable(self):
+        return self._read_enable("Y")
+
+    def write_yenable(self, value):
+        self._write_enable("Y", value)
+
+    def read_zenable(self):
+        return self._read_enable("Z")
+
+    def write_zenable(self, value):
+        self._write_enable("Z", value)
 
     @command
     def reset_device(self):
