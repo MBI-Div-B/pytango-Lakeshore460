@@ -3,7 +3,7 @@
   <classes name="Lakeshore460" pogoRevision="9.6">
     <description description="&#xA;Created on Fr, Jan 28 2022&#xA;&#xA;Device server to configure and read a Lakeshore Model 460 gaussmeter.&#xA;Reads all three probe inputs and returns individual readings as well as magnitude.&#xA;&#xA;@author: Michael Schneider mschneid@mbi-berlin.de, Max Born Institut Berlin&#xA;" title="Lakeshore460" sourcePath="" language="PythonHL" filestogenerate="XMI   file,Code files,Protected Regions" license="GPL" copyright="" hasMandatoryProperty="false" hasConcreteProperty="false" hasAbstractCommand="false" hasAbstractAttribute="false">
       <inheritances classname="Device_Impl" sourcePath=""/>
-      <identification contact="MBI Berlin" author="{Author}" emailDomain="tango@mbi-berlin.de" classFamily="OtherInstruments" siteSpecific="" platform="All Platforms" bus="" manufacturer="" reference=""/>
+      <identification contact="MBI Berlin" author="Michael Schneider" emailDomain="tango@mbi-berlin.de" classFamily="OtherInstruments" siteSpecific="" platform="All Platforms" bus="" manufacturer="" reference=""/>
     </description>
     <deviceProperties name="gpib_addr" description="NoneNone">
       <type xsi:type="pogoDsl:StringType"/>
